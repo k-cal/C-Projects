@@ -1,5 +1,4 @@
 # C-Projects
-Projects in plain C.
 
 For the most part, these can be compiled with gcc without too much trouble. Just gcc [source] -o [output]
 
