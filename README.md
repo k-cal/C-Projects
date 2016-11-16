@@ -16,4 +16,4 @@ A simple shell with a few built-in commands. Aside from running programs (with b
 
 Piping input to and from a file are also supported with "<" and ">".
 
-There's a small extra experiment with pipes (as in between processes) in here as well, because pipes aren't something we covered in too much detail during regular coursework. It's not something that is noticeable from regular use, however. A pipe is used for a minor message between the shell and its forked child behind the scenes.
+There's a small extra experiment with pipes (as in between processes) in here as well, because pipes between processes are something we hadn't covered in too much detail during regular coursework. It's not something that is noticeable from regular use, however. A pipe is used for a minor message between the shell and its forked child behind the scenes.
