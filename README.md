@@ -7,7 +7,7 @@ A short text game that involves travelling through different rooms to find an ex
 
 The primary purpose of this was to get practice with file I/O, in preparation for subsequent projects in the course.
 
-It's named `adventure.startendmod.c` because it's actually a slight modification on what I turned in. The primary difference is an extra line or two that prevents the starting room from connecting to the ending room.
+It's named `adventure.startendmod.c` because it's actually a slight modification on what I turned in for grading back then. The primary difference is an extra line or two that prevents the starting room from connecting to the ending room.
 
 #####smallsh
 A simple shell with a few built-in commands. Aside from running programs (with backgrounding supported by ending a line with &) the built-ins are `exit`, `cd`, and `status`. The purpose of these built-ins is probably fairly clear for the most part.
