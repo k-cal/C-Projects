@@ -93,7 +93,7 @@ FOURTH COMMAND: a bad command (for debugging)
     "python ftclient.py flip2.engr.oregonstate.edu CONTROL_PORT -badcommand DATA_PORT"
 
 The fourth command does nothing useful, but can be used to verify the server
-properly responds to bad commands.  t's a bad command that the client
+properly responds to bad commands. It's a bad command that the client
 intentionally allows through validation. Even though the DATA_PORT will
 never be used, something must still be entered. This command is mostly
 treated as a "-l" or "-cd" for validation purposes, even though
