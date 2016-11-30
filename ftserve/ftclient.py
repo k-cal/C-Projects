@@ -6,29 +6,6 @@
 #The client can contact the server to request directory listing and files.
 #Usage instructions can be obtained by running the program without arguments.
 
-#EXTRA CREDIT(S)
-#Though I wrote the program intending only to support text files,
-#I've tested with a randomly generated file of 512 MiB (as well as various smaller
-#files up to about 10 MiB that aren't randomly generated) and found this works without error.
-#As such, I'm making claim to that extra-credit point suggested in the instructions.
-
-#I also added directory changing. It's fairly easy, though I made it slightly more
-#difficult for myself by choosing to use pipes to relay information from forked children.
-
-#Something specific to the client (since the server isn't very interactive) is
-#the ability to request filenames with spaces. It's poor form, but supported by
-#my client and server. Try testing with files that have spaced out names.
-#Just remember that you have to enclose the filename in quotes if it has spaces.
-#Single and double quotes both seem to be fine on flip.
-
-#Like last time, I also still have basic checks for connection termination.
-#They're not particularly hard, but since they weren't worth points last
-#time, they're probably not worth points this time. If you want to test it out,
-#send an interrupt signal to the client or server while transferring a large
-#file (I tested with 512 MiB files.) If the client is interrupted, the server
-#will state that sending the file failed. If the server is interrupted, the
-#client will state that the connection with the server was lost.
-
 import socket
 import sys
 import os
@@ -278,7 +255,8 @@ def ftpclient(argv):
         print("File transfer and writing complete.")
         #Tell server we're done.
         controlSocket.send("OK\0")
-        #The server is the one that closes data connection socket first.
+        #The server should be the one that closes data connection,
+        #following assignment instructions.
         #But I still prefer to close on both ends for best practice.
         dataConnectionSocket.close()
     
@@ -315,11 +293,6 @@ def ftpclient(argv):
         else:
             print("DIRECTORY LISTING:")
         
-        #Some minor parsing of the listing.
-        #Adding tabs to all lines for readability. (Setting it off in the console.)
-        #Commented out for now.
-        #dataMessage = "\t" + dataMessage
-        #dataMessage = dataMessage.replace("\n", "\n\t")
         print("TYPE\tNAME\n" + dataMessage)
         
         #If the connection was interrupted, we exit early after incomplete printing.
@@ -331,7 +304,8 @@ def ftpclient(argv):
         
         #Tell server we're done. (But not if failFlag is set.)
         controlSocket.send("OK\0")
-        #The server is the one that closes data connection socket first.
+        #The server should be the one that closes data connection,
+        #following assignment instructions.
         #But I still prefer to close on both ends for best practice.
         dataConnectionSocket.close()
     

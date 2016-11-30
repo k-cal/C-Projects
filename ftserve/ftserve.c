@@ -6,28 +6,9 @@
 //The server listens on a port (specified on command line).
 //Clients can request directory listing and files.
 
-//EXTRA CREDIT(S)
-//Though I wrote the program intending only to support text files,
-//I've tested with a randomly generated file of 512 MiB (as well as various smaller
-//files up to about 10 MiB that aren't randomly generated) and found this works without error.
-//As such, I'm making claim to that extra-credit point suggested in the instructions.
-
-//I also added directory changing. It's fairly easy, though I made it slightly more
-//difficult for myself by choosing to use pipes to relay information from forked children.
-
-//Filenames with spaces are supported. More info in the README and client comments.
-
-//Like last time, I also still have basic checks for connection termination.
-//They're not particularly hard, but since they weren't worth points last
-//time, they're probably not worth points this time. If you want to test it out,
-//send an interrupt signal to the client or server while transferring a large
-//file (I tested with 512 MiB files.) If the client is interrupted, the server
-//will state that sending the file failed. If the server is interrupted, the
-//client will state that the connection with the server was lost.
-
 
 //INITIAL SOURCES
-//These sources guide much of my knowledge on sockets from CS344.
+//These sources guide much of my knowledge on sockets.
 
 //Beej's guide is always a huge help for socket programming.
 //http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html
@@ -42,10 +23,10 @@
 //socket fd variables like "sockfd" is also based on the conventions in that source.
 
 
-//ACTUAL CODE STARTS AROUND HERE
-
 //You can play around with this value if you want to change the maximum number of clients
 //that can be serviced simultaneously. I'm not sure it's really helpful for this program.
+//I've only ever tested with a single client, so multiple clients may cause unexpected behavior.
+//Multiple handles on files, or simultaneous attempts to change directory.
 #define MAX_CONNECTIONS 5
 
 //You can play around with this value to change the maximum amount of a file loaded into memory
@@ -74,12 +55,10 @@
 #include <sys/wait.h> //zombie stuff (not sure we need it, but we used it in CS344)
 #include <dirent.h> //directory listing
 
-#include <netdb.h> //Not sure I need this now, but here it is again anyway.
-//I recall needing it for something back in CS344, but I really can't recall what that is now.
+#include <netdb.h>
 
 #include <sys/stat.h> //Found useful code for quickly getting filesize.
 //http://stackoverflow.com/questions/8236/how-do-you-determine-the-size-of-a-file-in-c
-//This comment and source was originally from a CS344 program.
 
 
 //Prototypes. Everybody loves prototypes.
@@ -173,7 +152,7 @@ int initialSetup(char** commandArgs) {
         fprintf(stderr, "%s: couldn't set SO_REUSEADDR\n", commandArgs[0]);
         exit(1);
     };
-                                                      //As before in Program 1,
+    
     servAddr.sin_family = AF_INET;                    //AFI_INET for IPv4
     servAddr.sin_port = htons(atoi(commandArgs[1]) ); //sin_port in proper network order
     servAddr.sin_addr.s_addr = htonl(INADDR_ANY);     //This part is different from the client code.
@@ -211,7 +190,6 @@ void serverLoop(char** commandArgs, int controlsockfd) {
       
     int received, sent, pipeRead;
     
-    //You might remember I used 512 and 1024 as buffer sizes for the chat program.
     //512 is probably enough for most filenames. I think 255 or 256 is the max length.
     char clientInput[512];   //Arbitrarily big.
     char clientAddress[17];  //Dotted decimal is 16 char max. 17 is for the null terminator.
@@ -527,7 +505,7 @@ void listDirectory(char ** commandArgs, int newcontrolsockfd, char * clientAddre
     }
     
     //Rare, but it could happen.
-    //(It actually shouldn't because of the existence of "." and ".." as directories.
+    //(It actually shouldn't because of the existence of "." and ".." as directories.)
     if (strlen(listingBuffer) == 0) {
         fprintf(stdout, "Empty directory, altering listing to notify client.\n");
         fflush(stdout);
@@ -587,8 +565,7 @@ void listDirectory(char ** commandArgs, int newcontrolsockfd, char * clientAddre
         exit(1);
     }
     
-    //I added this after getting the program working completely for grading purposes.
-    //I think it makes sense for client to send a final "OK" message.
+    //I think it makes sense for the client to send a final "OK" message.
     received = recv(newcontrolsockfd, okBuffer, sizeof(okBuffer), 0);
     if (received < 0 || strcmp(okBuffer, okString) != 0) {
         fprintf(stdout, "Did not receive client success response over control connection.\n\n");
@@ -635,16 +612,7 @@ void attemptSend(char ** commandArgs, int newcontrolsockfd, char * filename, cha
     
     //Most of these integers will be useful.
     int sent, received, datasockfd, reqSize, bufferSize, currentRead, amountRead, leftToSend, totalSent;
-    
-    /* //No longer necessary.
-    if (strcmp(filename, rootDir) == 0 || strcmp(filename, backDir) == 0) {
-        fprintf(stdout, "Invalid filename specified.\nSending error message through port %s.\n\n", commandArgs[1]);
-        fflush(stdout);
-        sendClientError(newcontrolsockfd, "invalid filename specified");
-        exit(1);
-    }
-    */
-    
+        
     reqFile = fopen(filename, "r"); //Read only, since we're just sending a file.
     if (reqFile == 0) {
         fprintf(stdout, "File '%s' not found or inaccessible.\nSending error message through port %s.\n\n", 
@@ -665,10 +633,9 @@ void attemptSend(char ** commandArgs, int newcontrolsockfd, char * filename, cha
     }
     //The g command can't be used to change directories.
     
-    //This is done with a helper, see below.
-    reqSize = filesize(filename);
-    
     //I think it's good to know filesize beforehand.
+    reqSize = filesize(filename);
+
     if (reqSize < 0) {
         fprintf(stdout, "Couldn't get filesize of file '%s'.\nSending error message through port %s.\n\n",
                 filename, commandArgs[1]);
@@ -776,8 +743,7 @@ void attemptSend(char ** commandArgs, int newcontrolsockfd, char * filename, cha
     
     //Make sure the whole file was read. But it's not like the client can do much about it if server failed.
     //Only thing to do is try again. Client does get the filesize ahead of time, so it's possible for the client
-    //to do a quick verification against the size. No hash to verify against though, which greatly lessens the
-    //reliability of this server.
+    //to do a quick verification against the size.
     if (amountRead < reqSize) {
         fprintf(stderr, "%s: failed to send complete file to %s:%d.\n\n", commandArgs[0], clientAddress, dataPort);
         close(datasockfd);
@@ -872,7 +838,8 @@ void sendClientError(int newcontrolsockfd, char * errorMessage) {
             fflush(stdout);
         }
     }
-    //The client closes first, but the server closes as well for best practices.
+    //The client closes first following assignment instructions,
+    //but the server closes as well for best practices.
     close(newcontrolsockfd);
 }
 
