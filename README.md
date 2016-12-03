@@ -20,6 +20,3 @@ There's a small extra experiment with pipes (as in between processes) in here as
 
 #####ftserve
 A simple file transfer program that supports listing the current directory, changing directories, and sending files. It's meant to be used in conjunction with the ftclient.py file, and the commands `-l`, `-g`, and `-cd`. See the included README for more detailed instructions.
-
-#####chatclient
-A simple chat client that allows turn-based conversations. The server is written in Python. See the directory for more detailed information.
