@@ -7,6 +7,10 @@
 #include <stdio.h>  //for i/o
 #include <time.h>   //for seeding
 #include <unistd.h> //for pid
+/* //Windows headers to replace unistd.
+#include <direct.h> //_mkdir
+#include <process.h> //_getpid
+*/
 #include <string.h> //for string functions
 #include <assert.h> //I assert after malloc. I don't assert for other reasons.
 
@@ -63,6 +67,10 @@ int main() {
   //I feel like 16 wouldn't be enough, and 32 is the next power of 2. Everybody likes powers of 2.
   snprintf(directory, 128, "changal.rooms.%d", getpid() );
   mkdir(directory, 0755);
+  /* // Replace the two above lines with these for Windows.
+  snprintf(directory, 128, "changal.rooms.%d", _getpid() );
+  _mkdir(directory);
+  */
   //Do we need to give the group and other users permissions too?
   //I'm thinking the person compiling and running this will delete it after,
   //before anybody else can get at the files.
@@ -231,12 +239,8 @@ void extraLinks (struct roomStruct ** roomHolder) {
         //can't pass six links
      && roomHolder[randomRoom]->neighborCount <= 6 
         //other room can't pass six links
-     && !roomArrayChecker(roomHolder[cycler]->neighbor, 7, roomHolder[randomRoom])
+     && !roomArrayChecker(roomHolder[cycler]->neighbor, 7, roomHolder[randomRoom]) ) {
         //can't double link; no double doors here
-     && !(roomHolder[cycler]->type == START_ROOM && roomHolder[randomRoom]->type == END_ROOM)
-     && !(roomHolder[cycler]->type == END_ROOM && roomHolder[randomRoom]->type == START_ROOM) ) {
-        //these last two might seem strange, but they just prevent a START-END link
-        //this forces the player to at least traverse two rooms to win
       linkRooms(roomHolder[cycler], roomHolder[randomRoom]);
       edgeCounter++;
       
@@ -254,7 +258,7 @@ void extraLinks (struct roomStruct ** roomHolder) {
         maxReached[randomRoom] = 1;
       }
     }
-    cycler = (cycler + 1) % 7; //Modulus to loop through indices repeatedly.
+    cycler = (cycler + 1) % 7; //Mod to loop through indices repeatedly.
     //We started at the last room because I wanted to, no special reason for it.
   } while (!intArrayChecker(maxReached, 7, 1) );
   
@@ -292,8 +296,7 @@ void extraLinks (struct roomStruct ** roomHolder) {
 //Post-condition: Each room has a name. Shuffled from a list of ten.
 void assignNames(struct roomStruct ** roomHolder) {
   //I feel like this would be more useful as a global variable,
-  //but "no globals" is a standard rule of good OOP.
-  //This game really isn't a good example of OOP, anyway.
+  //but "no globals" is a good habit.
   char *nameList[10];
   nameList[0] = "phreak";
   nameList[1] = "phrexi";
@@ -315,7 +318,7 @@ void assignNames(struct roomStruct ** roomHolder) {
     strcpy(roomHolder[index]->name, nameList[nameIndices[index]]);
     //Kind of strange to shuffle integers rather than the names themselves, but this is how I did it.
     //So we need to consider two arrays to get the source name.
-    //The first 7 indices are used, the last three are just trashed. Such is life in "adventure".
+    //The first 7 indices are used, the last three are just trashed. Such is life.
   }
 }
 
@@ -419,7 +422,7 @@ void shuffleInt(int * intArray, int size) {
 //so it's not all that different from shuffleInt. Just a different data type.
 //neighbor is an array of pointers to roomStruct
 //(The name "neighbor" kind of gives away the fact that this function was originally part of
-// a different, longer function.)
+// a different, longer function)
 //size is that array's size
 //Post-condition: The array is shuffled, but not in a particularly good way.
 //                Cryptologically speaking.
@@ -553,7 +556,7 @@ void readRoom(struct playRoom * currentRoom, char * filename) {
                         //Maximum character count is in "ROOM TYPE: START_ROOM"
   char neighborName[7]; //I love the convenience of six-letter names.
                         //Maybe I should have went lower, with five or four?
-                        //But four-letter names could be offensive.
+                        //But four-letter names might be offensive.
   char typeName[11]; //"START_ROOM" is ten characters.
                      //I just realised I could have used the same temporary string
                      //for both types and room names. Oh well.
