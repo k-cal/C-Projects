@@ -3,6 +3,9 @@
 //Program 2 - adventure
 //2016-7-14
 
+//There are a few places (four lines) that are commented out for use on Windows systems.
+//I included these lines so that people with Windows could enjoy the game too.
+
 #include <stdlib.h>//For rand
 #include <stdio.h>  //for i/o
 #include <time.h>   //for seeding
