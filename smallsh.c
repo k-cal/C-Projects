@@ -52,7 +52,7 @@
 //It's going to be passed all over. Kind of like globals, so somewhat poor form.
 //But the good thing about keeping everything in the struct is that the "globals"
 //are only exposed when I specifically want to access it. No variable name pollution from true globals.
-//Some fixed-size arrays that aren't for arguments use MAX_ARG size,
+//Some fixed-size arrays that aren't for arguments use MAX_ARG size.
 //There's no significance to this. Just thought 512 was a good maximum.
 //A thought: tokenBuffer is like argv, and we could easily add an int argc.
 //           Not sure if we need argc yet, but if we do, then it makes sense 
@@ -327,6 +327,8 @@ void tokenParser(struct everythingStruct * shellState) {
       fflush(stdout);
     }
   }
+  
+  //cd is the next built-in
   else if (strcmp(shellState->tokenBuffer[0], "cd") == 0) {
     //This works because we set a 0 pointer at the end of tokenBuffer.
     if (shellState->tokenBuffer[1]) {
@@ -346,6 +348,8 @@ void tokenParser(struct everythingStruct * shellState) {
       chdir(getenv("HOME") );
     }
   }
+  
+  //status is simpler than cd, but checked after because it makes sense maybe.
   else if (strcmp(shellState->tokenBuffer[0], "status") == 0) {
     fprintf(stdout, "%s\n", shellState->statusMsg);
     fflush(stdout);
@@ -354,21 +358,26 @@ void tokenParser(struct everythingStruct * shellState) {
       fflush(stdout);
     }
   }
+  
+  //if a built-in wasn't used, then we're trying to execute something
   else {
     if (shellState->background) { //pipe if we're backgrounding
       if (pipe(shellState->smallpipe) == -1) {
         //I only ever use perror for pipe errors. Maybe inconsistent.
         //But I don't know how to best describe pipe errors.
         //I don't have much experience using them, aside from in this project.
+        //EDIT FROM THE FUTURE: I've used pipes in the ftserve project as well. Fun.
         perror("Piping Failed");
         exit(1);
       }
       //I thought about making the pipe non-blocking, but then decided against it.
       //Blocking helps to prevent weird race conditions, so it's a good thing.
-      // if (fcntl(shellState->smallpipe[0], F_SETFL, O_NONBLOCK) == -1) {
-        // perror("Failed to unblock pipe");
-        // exit(1);
-      // }
+      /*
+      if (fcntl(shellState->smallpipe[0], F_SETFL, O_NONBLOCK) == -1) {
+        perror("Failed to unblock pipe");
+        exit(1);
+      }
+      */
     }
     shellState->forkpid = fork();
     
@@ -407,7 +416,7 @@ void tokenParser(struct everythingStruct * shellState) {
 void overseer(struct everythingStruct * shellState) {
   if (shellState->background) {
     //Check to see if the child shell has anything to report. If so, it means it failed to exec.
-    //Reading up to MAX_ARG because it seems like a good limit to me. (512 bytes)
+    //Reading up to MAX_ARG because it seems like a good general-purpose limit to me. (512 bytes)
     //The child only ever writes 5 bytes.
     shellState->pipeRead = read(shellState->smallpipe[0], shellState->pipeStatus, MAX_ARG);
     //(If not, this means the child shell got killed by exec. RIP)
@@ -522,7 +531,7 @@ void executor(struct everythingStruct * shellState) {
     
     if (!shellState->attemptIR) { //We force the IR to dev/null.
       inputFD = open("/dev/null", O_RDONLY);
-      //Handling the dup2 inside a conditional, maybe weird.
+      //Still handling the dup2 inside a conditional, still maybe weird.
       if (dup2(inputFD, 0) < 0) {
         fprintf(stderr, "cannot open /dev/null/ for input\n");
         fflush(stderr);
@@ -532,7 +541,7 @@ void executor(struct everythingStruct * shellState) {
     
     if (!shellState->attemptOR) { //We force the OR to dev/null.
       outputFD = open("/dev/null", O_WRONLY);
-      //Still handling the dup2 inside a conditional.
+      //Still "still handling the dup2 inside a conditional".
       if (dup2(outputFD, 1) < 0) {
         fprintf(stderr, "cannot open /dev/null/ for output\n");
         fflush(stderr);
