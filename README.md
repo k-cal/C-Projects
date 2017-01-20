@@ -1,6 +1,6 @@
 # C-Projects
 
-For the most part, these can be compiled with gcc without too much trouble. Just gcc [source] -o [output]
+For the most part, these can be compiled with gcc without too much trouble. Just `gcc [source] -o [output]`
 
 I went through a phase of trying out 2-space-length indentation for some of these projects to see if it would make code more compact. I'm not sure it really helped much at all, so I'm mostly back to 4-space indents now.
 
