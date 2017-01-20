@@ -70,7 +70,7 @@ FIRST COMMAND: a directory listing
 
     
 SECOND COMMAND: request a file (a "get" command)
-    "python ftclient.py flip2.engr.oregonstate.edu CONTROL_PORT -g FILENAME DATA_PORT"
+    "python ftclient.py HOSTNAME CONTROL_PORT -g FILENAME DATA_PORT"
 
 Invalid names will be met by error messages from the server.
 
@@ -83,14 +83,14 @@ the sense that anything that's not explicit consent is taken to be dissent.
 
 
 THIRD COMMAND: change the server's working directory
-    "python ftclient.py flip2.engr.oregonstate.edu CONTROL_PORT -cd DIRECTORY"
+    "python ftclient.py HOSTNAME CONTROL_PORT -cd DIRECTORY"
 
 Do not include a DATA_PORT when using the "-cd" command.
 Success or failure will be reported to the client by the server.
 
 
 FOURTH COMMAND: a bad command (for debugging)
-    "python ftclient.py flip2.engr.oregonstate.edu CONTROL_PORT -badcommand DATA_PORT"
+    "python ftclient.py HOSTNAME CONTROL_PORT -badcommand DATA_PORT"
 
 The fourth command does nothing useful, but can be used to verify the server
 properly responds to bad commands. It's a bad command that the client
@@ -105,8 +105,9 @@ ADDITIONAL NOTES:
 Though I was adamant about the server and client being placed in different
 directories, the existence of the "-cd" command means it's possible to
 navigate back to the same directory as the client and attempt to overwrite
-files with themselves. Please don't do that, because I'm fairly certain it
-will be harmful to your data and not very useful.
+files with themselves when the same host is serving as both client and server.
+Please don't do that, because I'm fairly certain it will be harmful to your
+data and not very useful.
 
 Formatting of the directory listing is along the lines of:
 <file>	filename1
