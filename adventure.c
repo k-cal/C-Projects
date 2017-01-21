@@ -472,7 +472,9 @@ void playGame(char * directory, char * startRoom) {
   }
   int pathCounter = 0;
   
-  char userChoice[7]; //I don't need to read more than six characters entered.
+  char userChoice[8];
+  //I don't need to read more than six characters entered.
+  //But I allow exactly one extra.
   
   do {
   printf("CURRENT LOCATION: %s\n", currentRoom.name);
@@ -491,7 +493,12 @@ void playGame(char * directory, char * startRoom) {
   }
   
   printf("WHERE TO? >");
-  fgets(userChoice, 7, stdin);
+  //fgets(userChoice, 7, stdin);
+  
+  //Changing to not use fgets
+  fscanf(stdin, "%7[^\n]", userChoice);
+  //Make sure the player doesn't enter carrotttt or something.
+  
   while (getchar() != '\n'); //A fun way to eat newlines that I learned in 261.
                              //Still not completely sure why it works.
   printf("\n"); //An extra blank line after the user's return.
