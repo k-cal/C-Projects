@@ -16,6 +16,8 @@
 */
 #include <string.h> //for string functions
 #include <assert.h> //I assert after malloc. I don't assert for other reasons.
+#include <sys/stat.h> //for mkdir
+#include <sys/types.h> //for mode_t argument of mkdir
 
 //There's probably no reason for this to exist, but hey, I like enums.
 enum ROOMTYPE {
